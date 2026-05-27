@@ -10,7 +10,7 @@
 
 **Success looks like:** A recruiter can submit a candidate, see a clear report (score + evidence), and act on it without watching the entire video or re-reading the resume line by line.
 
-**Context:** Precision IT / OSP built a production SDR screener for this workflow; this repo is a mock/learning implementation. Align behavior and stack with the live app when the team shares details.
+**Context:** Click Theory Capital built a production SDR screener for this workflow; this repo is a mock/learning implementation. Align behavior and stack with the live app when the team shares details.
 
 ## System overview
 

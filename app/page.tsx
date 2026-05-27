@@ -1,1 +1,5 @@
-// Placeholder: redirect to /upload or /login based on session
+import { redirect } from "next/navigation";
+
+export default function HomePage() {
+  redirect("/login");
+}

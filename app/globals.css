@@ -1,1 +1,25 @@
-/* Placeholder: Tailwind directives + theme tokens */
+@import "tailwindcss";
+
+@theme {
+  --color-sand: #e8e0d4;
+  --color-cream: #f5f0e8;
+  --color-terracotta: #c4693a;
+  --color-clay: #a85a32;
+  --color-stone: #8b7e6e;
+  --color-charcoal: #3d3630;
+  --color-dried-grass: #d4c4a8;
+  --color-sand-dark: #d9cfc0;
+
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+}
+
+@layer base {
+  body {
+    @apply bg-sand text-charcoal antialiased;
+  }
+}
