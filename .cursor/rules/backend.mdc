@@ -1,0 +1,66 @@
+---
+description: SDR Screener backend — API routes, Supabase, n8n workflows
+globs: {app/api,lib,supabase,n8n}/**/*
+alwaysApply: false
+---
+
+# SDR Screener — Backend
+
+No separate Express server. Backend = **Next.js Route Handlers** + **Supabase** + **n8n** (external workflow).
+
+## API routes (`app/api/`)
+
+| Route | Responsibility |
+|-------|----------------|
+| `GET /api/job-descriptions` | List current user's saved JDs |
+| `POST /api/job-descriptions` | Create JD (`title`, `body`) |
+| `PATCH /api/job-descriptions/[id]` | Update JD (owner only) |
+| `DELETE /api/job-descriptions/[id]` | Delete JD (owner only; reject or soft-delete if candidates reference it) |
+| `POST /api/upload/presign` | Return Supabase Storage signed upload URL (resume PDF, video mp4/webm) |
+| `POST /api/screen` | Validate `job_description_id`, load `body` as `jd_text`, insert `candidates` row, fire n8n webhook |
+| `GET /api/auth/callback` | Supabase auth code exchange |
+
+Webhook payload to n8n: `{ candidate_id, resume_path, video_path?, jd_text }` where `jd_text` is resolved from `job_descriptions.body`. Use `N8N_SCREEN_WEBHOOK_URL` from env.
+
+## Supabase (`supabase/`)
+
+- **`job_descriptions`**: `id`, `user_id`, `title`, `body`, `created_at`, `updated_at`. RLS: owner-only CRUD.
+- **`candidates`**: includes `job_description_id` (FK → `job_descriptions`); `status`: `processing` | `complete` | `failed`.
+- **`screenings`**: `overall_score`, `summary`, `strengths`/`weaknesses` JSONB, `transcript`, `raw` jsonb.
+- Enable **RLS** on all tables: users see only their own rows (`user_id` on `job_descriptions` and `candidates`).
+- Storage buckets: `resumes`, `videos` — private, signed URLs for read/write.
+
+Use `lib/supabase/server.ts` in routes; `SUPABASE_SERVICE_ROLE_KEY` only in server/n8n, never client.
+
+## n8n (`n8n/`)
+
+- **Source of truth** for scoring prompts: `n8n/prompts/` (system, user template, JSON schema).
+- Production workflow: `n8n/workflows/v1-webhook-supabase.workflow.json`.
+- Pipeline: download files → extract PDF text → Whisper if video → single OpenAI structured-output call → write `screenings` + set candidate `complete`.
+- Do not duplicate rubric logic in Next.js — keep it in n8n prompts.
+
+## AI scoring output shape
+
+```json
+{
+  "overall_score": 0,
+  "summary": "",
+  "strengths": [{ "dimension": "", "score": 0, "evidence": "" }],
+  "weaknesses": [{ "dimension": "", "score": 0, "evidence": "" }],
+  "red_flags": []
+}
+```
+
+Renormalize weights when video is missing (verbal_delivery, objection_handling → null).
+
+## Env vars
+
+See `.env.local.example`. Never commit secrets.
+
+## Avoid
+
+- Rubric tables or editable scoring weights in the app — rubric stays in n8n prompts only.
+- Passing only `job_description_id` to n8n without resolving `jd_text` server-side first.
+- Org/team/multi-tenant tables unless explicitly requested.
+- Blocking on n8n in the API route — trigger webhook and return; n8n writes async.
+- Streaming large files through Next.js or n8n webhook body.

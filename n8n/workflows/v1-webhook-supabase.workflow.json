@@ -1,0 +1,8 @@
+{
+  "name": "SDR Screener — v1 (Webhook + Supabase)",
+  "meta": {
+    "description": "Placeholder — import and configure in n8n UI. Webhook from /api/screen → score → Supabase write-back."
+  },
+  "nodes": [],
+  "connections": {}
+}

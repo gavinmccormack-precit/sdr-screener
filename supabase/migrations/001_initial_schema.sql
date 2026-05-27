@@ -1,0 +1,2 @@
+-- Placeholder: job_descriptions, candidates (with job_description_id), screenings, RLS, storage buckets
+-- See ARCHITECTURE.md for intended columns

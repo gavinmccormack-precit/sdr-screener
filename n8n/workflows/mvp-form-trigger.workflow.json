@@ -1,0 +1,8 @@
+{
+  "name": "SDR Screener — MVP (Form Trigger)",
+  "meta": {
+    "description": "Placeholder — import and configure in n8n UI. Form → extract → whisper → score → email."
+  },
+  "nodes": [],
+  "connections": {}
+}

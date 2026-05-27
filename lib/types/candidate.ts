@@ -1,0 +1,1 @@
+// Placeholder: Candidate, CandidateStatus types

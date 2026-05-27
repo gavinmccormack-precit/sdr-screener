@@ -1,0 +1,53 @@
+---
+description: SDR Screener frontend — Next.js pages, components, hooks
+globs: {app,components,hooks}/**/*
+alwaysApply: false
+---
+
+# SDR Screener — Frontend
+
+Stack: **Next.js 15 App Router**, **TypeScript**, **Tailwind**, **shadcn/ui**, **Supabase client** (`@supabase/ssr`).
+
+## Product constraints (v1)
+
+- Recruiters **save job descriptions** (paste JD or requirements list), **select one via dropdown** on upload, and **add/delete** JDs. No rubric editor.
+- Pages: `/login`, `/job-descriptions`, `/upload`, `/candidates`, `/candidates/[id]`.
+- Show `processing` → `complete` via Supabase Realtime on the detail page.
+
+## Structure
+
+| Path | Use |
+|------|-----|
+| `app/(auth)/` | Login only |
+| `app/(dashboard)/` | Job descriptions, upload, candidates (protected) |
+| `app/(dashboard)/job-descriptions/` | List + add/edit/delete saved JDs |
+| `components/{auth,upload,candidates,job-descriptions,layout}/` | Feature UI |
+| `components/ui/` | shadcn primitives only |
+| `hooks/` | `use-upload`, `use-screening-realtime`, `use-job-descriptions` |
+
+## Patterns
+
+- Functional components; extract logic to hooks under `hooks/`.
+- Use **server components** for data fetch where possible; **client components** only when needed (forms, Realtime, file upload).
+- Call `POST /api/upload/presign` then upload **directly to Supabase Storage** — never send file bytes through Next.js API routes.
+- After upload, call `POST /api/screen` with `job_description_id`, paths, and candidate metadata.
+- Import types from `lib/types/`; do not duplicate screening JSON shapes in components.
+
+## Job descriptions UI
+
+- **`/job-descriptions`**: table or cards of saved JDs (`title`, snippet of `body`, `updated_at`). Actions: **Add**, **Edit**, **Delete** (confirm dialog; warn if JD is in use by past candidates).
+- **Add/Edit form**: `title` (required, short) + `body` textarea (required) — placeholder: *"Paste the full job description or a list of requirements"*.
+- **`/upload`**: **dropdown** (`Select` / shadcn) listing user's JDs by `title`. Required when at least one JD exists. Link: *"Manage job descriptions"* → `/job-descriptions`. If no JDs exist, show empty state + CTA to create one first.
+- **Candidate detail**: show JD `title` used for that screening (fetch via `job_description_id` on candidate).
+
+## UI
+
+- Strengths/weaknesses: show dimension label, score 0–10 bar, and evidence text.
+- Use `lucide-react` for icons; keep layouts minimal and recruiter-focused.
+
+## Avoid
+
+- Adding org/team/billing features unless explicitly requested.
+- One-off JD paste on upload without saving — always use saved JDs + dropdown (except dev/testing).
+- Putting OpenAI/Whisper calls in the frontend.
+- Proxying video through API routes.

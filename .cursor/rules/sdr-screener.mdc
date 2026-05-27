@@ -1,0 +1,28 @@
+---
+description: SDR Screener — project-wide product and architecture context
+alwaysApply: true
+---
+
+# SDR Screener
+
+AI screening for **SDR (Sales Development Representative)** candidates. Recruiters upload resume and/or video; receive score, summary, strengths, and weaknesses.
+
+## Repo layout
+
+- Application code: this folder (`app/`, `components/`, `lib/`, `hooks/`, `supabase/`, `n8n/`)
+- Architecture doc: `ARCHITECTURE.md`
+- Scoped rules: `frontend.mdc` (UI), `backend.mdc` (API, Supabase, n8n)
+
+## Principles
+
+- **Fast MVP**: sensible defaults; recruiters rarely configure rubrics.
+- **Baked-in SDR rubric** in n8n — recruiters do not edit scoring weights or dimensions.
+- **Saved job descriptions**: recruiters paste a JD or requirements list, save it in Postgres, pick one from a **dropdown** on upload, and **add/delete** (and edit) JDs on a dedicated page. No rubric editor.
+- **n8n owns AI orchestration**; Next.js owns auth, JD CRUD, uploads, and displaying results.
+- **~$0.03–0.05 per screening** (Whisper + GPT-4o-mini target).
+
+## Stack
+
+Next.js on Vercel · Supabase (Auth, Postgres, Storage) · n8n (Railway/Fly) · OpenAI + Whisper
+
+When implementing, read `ARCHITECTURE.md` before large changes.
