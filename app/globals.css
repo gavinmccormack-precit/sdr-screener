@@ -9,6 +9,8 @@
   --color-charcoal: #3d3630;
   --color-dried-grass: #d4c4a8;
   --color-sand-dark: #d9cfc0;
+  --color-sage: #8a9a7b;
+  --color-sage-dark: #5f6f52;
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;

@@ -14,6 +14,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-cream/80 text-charcoal",
         outline:
           "border border-stone/40 bg-transparent hover:bg-cream text-charcoal",
+        combobox: "h-11 px-4 font-normal hover:bg-cream",
       },
       size: {
         default: "h-11 px-5 py-2",
@@ -39,6 +40,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
+        suppressHydrationWarning={!asChild}
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}

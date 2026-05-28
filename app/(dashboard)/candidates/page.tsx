@@ -1,30 +1,33 @@
 import Link from "next/link";
+import { DashboardPage } from "@/components/layout/dashboard-page";
+import { EmptyState } from "@/components/layout/empty-state";
+import { CandidatesList } from "@/components/candidates/candidates-list";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PLACEHOLDER_CANDIDATES } from "@/lib/data/placeholder-candidates";
 
 export default function CandidatesPage() {
+  const candidates = PLACEHOLDER_CANDIDATES;
+
   return (
-    <div className="space-y-6">
-      <h1 className="font-serif text-3xl text-charcoal">Candidates</h1>
-      <Card className="border-stone/10">
-        <CardHeader>
-          <CardTitle className="font-serif text-xl">No screenings yet</CardTitle>
-          <CardDescription>
-            Completed reports will appear here after you run a screening.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild>
-            <Link href="/upload">Start a screening</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <DashboardPage
+      title="Candidates"
+      description="Screening results for uploaded resumes and videos."
+      action={
+        <Button asChild>
+          <Link href="/upload">New screening</Link>
+        </Button>
+      }
+    >
+      {candidates.length === 0 ? (
+        <EmptyState
+          title="No screenings yet"
+          description="Completed reports will appear here after you run a screening."
+          actionLabel="Start a screening"
+          actionHref="/upload"
+        />
+      ) : (
+        <CandidatesList candidates={candidates} />
+      )}
+    </DashboardPage>
   );
 }

@@ -1,12 +1,10 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { notFound } from "next/navigation";
+import { DashboardPage } from "@/components/layout/dashboard-page";
+import { CandidateReport } from "@/components/candidates/candidate-report";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  getPlaceholderCandidate,
+  getPlaceholderScreening,
+} from "@/lib/data/placeholder-candidates";
 
 export default async function CandidateDetailPage({
   params,
@@ -14,23 +12,17 @@ export default async function CandidateDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const candidate = getPlaceholderCandidate(id);
+
+  if (!candidate) {
+    notFound();
+  }
+
+  const screening = getPlaceholderScreening(id);
 
   return (
-    <div className="space-y-6">
-      <h1 className="font-serif text-3xl text-charcoal">Candidate report</h1>
-      <Card className="border-stone/10">
-        <CardHeader>
-          <CardTitle className="font-serif text-xl">Coming soon</CardTitle>
-          <CardDescription>
-            Screening report for candidate {id} will appear here.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild variant="outline">
-            <Link href="/candidates">Back to candidates</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <DashboardPage title="Candidate report">
+      <CandidateReport candidate={candidate} screening={screening} />
+    </DashboardPage>
   );
 }

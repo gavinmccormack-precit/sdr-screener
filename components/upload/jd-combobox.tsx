@@ -3,6 +3,10 @@
 import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { fieldControlStyles } from "@/lib/utils/field-styles";
+import { filterJobDescriptions } from "@/lib/utils/job-description";
+import { useJobDescriptions } from "@/providers/job-descriptions-provider";
+import type { JobDescription } from "@/lib/types/job-description";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,60 +21,47 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  PLACEHOLDER_JOB_DESCRIPTIONS,
-  type JobDescription,
-} from "@/lib/types/job-description";
 
 type JdComboboxProps = {
   value: string | null;
   onChange: (id: string | null, jd: JobDescription | null) => void;
-  jobDescriptions?: JobDescription[];
 };
 
-function filterJds(jds: JobDescription[], query: string) {
-  const q = query.trim().toLowerCase();
-  if (!q) return jds;
-  return jds.filter(
-    (jd) =>
-      jd.title.toLowerCase().includes(q) ||
-      jd.body.toLowerCase().includes(q)
-  );
-}
-
-export function JdCombobox({
-  value,
-  onChange,
-  jobDescriptions = PLACEHOLDER_JOB_DESCRIPTIONS,
-}: JdComboboxProps) {
+export function JdCombobox({ value, onChange }: JdComboboxProps) {
+  const { jobDescriptions } = useJobDescriptions();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   const selected = jobDescriptions.find((jd) => jd.id === value) ?? null;
-
   const filtered = useMemo(
-    () => filterJds(jobDescriptions, search),
+    () => filterJobDescriptions(jobDescriptions, search),
     [jobDescriptions, search]
   );
+
+  function select(jd: JobDescription) {
+    onChange(jd.id, jd);
+    setOpen(false);
+    setSearch("");
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           type="button"
-          variant="outline"
+          variant="combobox"
           role="combobox"
           aria-expanded={open}
-          className="h-11 w-full justify-between border-stone/30 bg-cream font-normal text-charcoal hover:bg-cream"
-        >
-          {selected ? (
-            <span className="truncate">{selected.title}</span>
-          ) : (
-            <span className="text-stone/70">
-              Search or select a job description…
-            </span>
+          className={cn(
+            fieldControlStyles,
+            "h-11 w-full justify-between hover:bg-cream",
+            open && "ring-2 ring-terracotta/30"
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-stone" />
+        >
+          <span className={cn("truncate", !selected && "text-stone/70")}>
+            {selected?.title ?? "Search or select a job description…"}
+          </span>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-stone" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0" align="start">
@@ -84,15 +75,7 @@ export function JdCombobox({
             <CommandEmpty>No matches. Try another search.</CommandEmpty>
             <CommandGroup heading="Saved job descriptions">
               {filtered.map((jd) => (
-                <CommandItem
-                  key={jd.id}
-                  value={jd.id}
-                  onSelect={() => {
-                    onChange(jd.id, jd);
-                    setOpen(false);
-                    setSearch("");
-                  }}
-                >
+                <CommandItem key={jd.id} value={jd.id} onSelect={() => select(jd)}>
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4 text-terracotta",

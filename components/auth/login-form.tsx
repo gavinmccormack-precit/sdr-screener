@@ -1,53 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { BrandHeader } from "@/components/layout/brand-header";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { TextLink } from "@/components/ui/text-link";
+import { IconBadge } from "@/components/ui/icon-badge";
+import { Button } from "@/components/ui/button";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { loading, run } = useAsyncAction();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
-    setLoading(true);
-    // TODO: supabase.auth.signInWithOtp({ email })
-    await new Promise((r) => setTimeout(r, 600));
-    setSent(true);
-    setLoading(false);
+    await run(async () => {
+      // TODO: supabase.auth.signInWithOtp({ email })
+      setSent(true);
+    }, 600);
   }
 
   return (
     <Card className="w-full max-w-md border-stone/10">
-      <CardHeader className="text-center">
-        <p className="font-serif text-sm uppercase tracking-[0.2em] text-stone">
-          Click Theory Capital
-        </p>
-        <CardTitle className="font-serif text-3xl text-charcoal">
-          SDR Screener
-        </CardTitle>
-        <CardDescription>
-          Sign in with your email. We&apos;ll send you a magic link.
-        </CardDescription>
+      <CardHeader>
+        <BrandHeader description="Sign in with your email. We'll send you a magic link." />
       </CardHeader>
       <CardContent>
         {sent ? (
           <div className="space-y-4 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-dried-grass/40">
-              <Mail className="h-6 w-6 text-terracotta" />
-            </div>
+            <IconBadge icon={Mail} />
             <p className="text-sm text-charcoal">
               Check <span className="font-medium">{email}</span> for your
               sign-in link.
@@ -63,8 +50,7 @@ export function LoginForm() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Work email</Label>
+            <FormField label="Work email" htmlFor="email">
               <Input
                 id="email"
                 type="email"
@@ -74,20 +60,19 @@ export function LoginForm() {
                 required
                 autoComplete="email"
               />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending…" : "Send magic link"}
-            </Button>
+            </FormField>
+            <LoadingButton
+              type="submit"
+              className="w-full"
+              loading={loading}
+              loadingText="Sending…"
+            >
+              Send magic link
+            </LoadingButton>
           </form>
         )}
         <p className="mt-6 text-center text-xs text-stone">
-          Demo:{" "}
-          <Link
-            href="/upload"
-            className="font-medium text-terracotta underline-offset-2 hover:underline"
-          >
-            Continue to dashboard
-          </Link>
+          Demo: <TextLink href="/upload">Continue to dashboard</TextLink>
         </p>
       </CardContent>
     </Card>
