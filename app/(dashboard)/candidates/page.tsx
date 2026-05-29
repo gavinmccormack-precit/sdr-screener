@@ -2,11 +2,15 @@ import Link from "next/link";
 import { DashboardPage } from "@/components/layout/dashboard-page";
 import { EmptyState } from "@/components/layout/empty-state";
 import { CandidatesList } from "@/components/candidates/candidates-list";
+import { CandidatesAutoRefresh } from "@/components/candidates/auto-refresh";
 import { Button } from "@/components/ui/button";
-import { PLACEHOLDER_CANDIDATES } from "@/lib/data/placeholder-candidates";
+import { listCandidatesWithScores } from "@/lib/db/candidates";
 
-export default function CandidatesPage() {
-  const candidates = PLACEHOLDER_CANDIDATES;
+export const dynamic = "force-dynamic";
+
+export default async function CandidatesPage() {
+  const candidates = await listCandidatesWithScores();
+  const hasProcessing = candidates.some((c) => c.status === "processing");
 
   return (
     <DashboardPage
@@ -18,6 +22,7 @@ export default function CandidatesPage() {
         </Button>
       }
     >
+      <CandidatesAutoRefresh active={hasProcessing} />
       {candidates.length === 0 ? (
         <EmptyState
           title="No screenings yet"

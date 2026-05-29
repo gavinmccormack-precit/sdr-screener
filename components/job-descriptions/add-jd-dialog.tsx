@@ -4,11 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useJobDescriptions } from "@/providers/job-descriptions-provider";
 import { useAsyncAction } from "@/hooks/use-async-action";
-import {
-  createJobDescription,
-  isJdDraftValid,
-  type JdDraft,
-} from "@/lib/utils/job-description-factory";
+import { isJdDraftValid, type JdDraft } from "@/lib/utils/job-description-factory";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,11 +25,13 @@ export function AddJdDialog() {
   const { loading, run } = useAsyncAction();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<JdDraft>(EMPTY_DRAFT);
+  const [error, setError] = useState<string | null>(null);
 
   const canSave = isJdDraftValid(draft);
 
   function reset() {
     setDraft(EMPTY_DRAFT);
+    setError(null);
   }
 
   function close() {
@@ -44,11 +42,15 @@ export function AddJdDialog() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!canSave) return;
-    await run(async () => {
-      // TODO: POST /api/job-descriptions
-      add(createJobDescription(draft));
-      close();
-    }, 400);
+    setError(null);
+    try {
+      await run(async () => {
+        await add(draft);
+        close();
+      });
+    } catch {
+      setError("Could not save job description. Please try again.");
+    }
   }
 
   return (
@@ -72,6 +74,11 @@ export function AddJdDialog() {
               value={draft}
               onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))}
             />
+            {error && (
+              <p className="text-sm text-terracotta-dark" role="alert">
+                {error}
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" disabled={loading} onClick={close}>

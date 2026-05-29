@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { useAsyncAction } from "@/hooks/use-async-action";
+import { useUpload } from "@/hooks/use-upload";
 import {
   EMPTY_UPLOAD_FORM,
   canSubmitUpload,
@@ -17,9 +18,10 @@ import {
 } from "@/components/upload/upload-form-sections";
 
 export function UploadForm() {
+  const router = useRouter();
   const [form, setForm] = useState<UploadFormState>(EMPTY_UPLOAD_FORM);
   const [submitted, setSubmitted] = useState(false);
-  const { loading, run } = useAsyncAction();
+  const { submit, loading, loadingText, error, reset: resetUpload } = useUpload();
 
   const canSubmit = canSubmitUpload(form);
 
@@ -28,17 +30,21 @@ export function UploadForm() {
   }
 
   function reset() {
+    resetUpload();
     setSubmitted(false);
     setForm(EMPTY_UPLOAD_FORM);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
-    await run(async () => {
-      // TODO: presign upload → POST /api/screen
-      setSubmitted(true);
-    }, 1200);
+    if (!canSubmit || loading) return;
+
+    try {
+      await submit(form);
+      router.push("/candidates");
+    } catch {
+      // Error message shown via useUpload().error
+    }
   }
 
   if (submitted) {
@@ -65,13 +71,19 @@ export function UploadForm() {
           size="lg"
           disabled={!canSubmit}
           loading={loading}
-          loadingText="Starting screening…"
+          loadingText={loadingText}
         >
           Run screening
         </LoadingButton>
-        {!canSubmit && (
+        {error && (
+          <p className="text-sm text-terracotta-dark" role="alert">
+            {error}
+          </p>
+        )}
+        {!canSubmit && !error && (
           <p className="text-sm text-stone">
-            Add candidate name, select a JD, and upload a resume to continue.
+            Add candidate name, select a JD, and upload a resume and video to
+            continue.
           </p>
         )}
       </div>

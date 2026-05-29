@@ -20,6 +20,7 @@ export function canSubmitUpload(form: UploadFormState): boolean {
   return (
     form.candidateName.trim().length > 0 &&
     form.jdId !== null &&
-    form.resume !== null
+    form.resume !== null &&
+    form.video !== null
   );
 }

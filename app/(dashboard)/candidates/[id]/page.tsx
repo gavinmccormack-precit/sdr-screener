@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { DashboardPage } from "@/components/layout/dashboard-page";
 import { CandidateReport } from "@/components/candidates/candidate-report";
-import {
-  getPlaceholderCandidate,
-  getPlaceholderScreening,
-} from "@/lib/data/placeholder-candidates";
+import { CandidatesAutoRefresh } from "@/components/candidates/auto-refresh";
+import { getCandidateWithScreening } from "@/lib/db/candidates";
+
+export const dynamic = "force-dynamic";
 
 export default async function CandidateDetailPage({
   params,
@@ -12,16 +12,17 @@ export default async function CandidateDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const candidate = getPlaceholderCandidate(id);
+  const result = await getCandidateWithScreening(id);
 
-  if (!candidate) {
+  if (!result) {
     notFound();
   }
 
-  const screening = getPlaceholderScreening(id);
+  const { candidate, screening } = result;
 
   return (
     <DashboardPage title="Candidate report">
+      <CandidatesAutoRefresh active={candidate.status === "processing"} />
       <CandidateReport candidate={candidate} screening={screening} />
     </DashboardPage>
   );

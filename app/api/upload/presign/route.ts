@@ -1,8 +1,12 @@
-import { NextResponse } from "next/server";
+import { createResumeUploadSession } from "@/lib/supabase/storage";
+import { ok, serverError } from "@/lib/api/respond";
 
 export async function POST() {
-  return NextResponse.json(
-    { error: "Not implemented" },
-    { status: 501 }
-  );
+  try {
+    const session = await createResumeUploadSession();
+    return ok(session, 201);
+  } catch (error) {
+    console.error("POST /api/upload/presign", error);
+    return serverError();
+  }
 }
